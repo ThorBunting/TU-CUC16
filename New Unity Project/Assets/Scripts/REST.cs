@@ -5,18 +5,18 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public struct Client {
-    public string _id;
-    public string name;
-    public string mac;
-    public int lat;
-    public int lng;
-    public int unc;
+    //public string _id;
+    //public string name;
+    //public string mac;
+    public float lat;
+    public float lng;
+    //public float unc;
     public string seenString;
-    public int seenEpoch;
-    public string manufacturer;
-    public string os;
-    public string ssid;
-    public string ap;
+    //public float seenEpoch;
+    //public string manufacturer;
+    //public string os;
+    //public string ssid;
+    //public string ap;
 }
 
 [System.Serializable]
