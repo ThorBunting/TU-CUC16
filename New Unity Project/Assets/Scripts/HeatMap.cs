@@ -14,9 +14,10 @@ public class HeatMap : MonoBehaviour {
 
     string url = "http://52.50.211.86:1880/clients";
     Dictionary<string, Texture2D> m_textures = new Dictionary<string, Texture2D>();
+    Dictionary<string, List<ParticleSystem>> m_particles = new Dictionary<string, List<ParticleSystem>>();
 
     [SerializeField]
-    GameObject quad;
+    GameObject particles;
 
     private IEnumerator getData() {
         WWW www = new WWW(url);
@@ -119,23 +120,32 @@ public class HeatMap : MonoBehaviour {
                 max = counter[x][y];
             }
         }
-        Texture2D texture = new Texture2D(xScale + 1, yScale + 1);
-
+        //Texture2D texture = new Texture2D(xScale + 1, yScale + 1);
+        List<ParticleSystem> list = new List<ParticleSystem>();
         for(int j = 0; j <= yScale; j++) {
             for(int i = 0; i <= xScale; i++) {
                 if(counter[i][j] <= max && counter[i][j] > 0) {
                     float step = (float)counter[i][j] / max;
+                    GameObject g = Instantiate(particles);
+                    ParticleSystem p = g.GetComponent<ParticleSystem>();
+                    g.transform.position = new Vector3(i, step * 2, j);
+                    p.emissionRate = 100 * step;
                     if(step > 0.3f) {
-                        texture.SetPixel(i, j, new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f));
+                        p.startColor = new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f);
+                        //texture.SetPixel(i, j, new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f));
                     } else {
-                        texture.SetPixel(i, j, new Color((step * 3), 1.0f, 0.0f));
+                        p.startColor = new Color((step * 3), 1.0f, 0.0f);
+                        //texture.SetPixel(i, j, new Color((step * 3), 1.0f, 0.0f));
                     }
+                    g.SetActive(false);
+                    list.Add(p);
                 } else {
-                    texture.SetPixel(i, j, new Color(0.0f, 0.0f, 1.0f));
+                    //texture.SetPixel(i, j, new Color(0.0f, 0.0f, 1.0f));
                 }
             }
         }
-        m_textures.Add(stamp, texture);
+        m_particles.Add(stamp, list);
+        //m_textures.Add(stamp, texture);
     }
 
     // Use this for initialization
@@ -149,14 +159,16 @@ public class HeatMap : MonoBehaviour {
 	void Update () {
         if(!done) {
             int i = 0;
-            foreach(var texture in m_textures) {
-                MeshRenderer quadRend = quad.GetComponent<MeshRenderer>();
-                quadRend.sharedMaterial.mainTexture = texture.Value;
+            foreach(var texture in m_particles) {
+                foreach(ParticleSystem g in texture.Value) {
+                    g.gameObject.SetActive(true);
+                    i++;
+                }
+                Debug.Log("Go " + i);
+                /*MeshRenderer quadRend = quad.GetComponent<MeshRenderer>();
+                quadRend.sharedMaterial.mainTexture = texture.Value;*/
                 done = true;
-
-                byte[] texData = texture.Value.EncodeToPNG();
-                File.WriteAllBytes(Application.dataPath + "/texture" + i++ + ".png", texData);
-                //break;
+                break;
             }
         }
 	}
