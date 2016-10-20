@@ -38,6 +38,8 @@ public class Interact : MonoBehaviour {
         }
     }
 
+
+
     /// <summary>
     /// Calls the click events of the top clickable object.
     /// </summary>
@@ -49,7 +51,9 @@ public class Interact : MonoBehaviour {
 
     #endregion
 
-    void Start() {
+    void Start()
+    {
+
     }
 
     void Update() {

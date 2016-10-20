@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 2197f24ff2ee5bf49ae8feeeba2419eb
-timeCreated: 1476968706
+guid: 127ed6b3ec5de054bafe1fe383532af1
+timeCreated: 1477005455
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -9,7 +9,7 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: Room Plan
+    4300000: Table 3 (Rectangular)
   materials:
     importMaterials: 1
     materialName: 0
@@ -39,7 +39,7 @@ ModelImporter:
     addColliders: 0
     importBlendShapes: 1
     swapUVChannels: 0
-    generateSecondaryUV: 1
+    generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
     keepQuads: 0
@@ -53,7 +53,7 @@ ModelImporter:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     human: []
