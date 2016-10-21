@@ -17,6 +17,9 @@ public class HeatMap : MonoBehaviour {
     Dictionary<string, List<ParticleSystem>> m_particles = new Dictionary<string, List<ParticleSystem>>();
 
     [SerializeField]
+    GameObject container;
+
+    [SerializeField]
     GameObject particles;
 
     private IEnumerator getData() {
@@ -98,21 +101,21 @@ public class HeatMap : MonoBehaviour {
             int x = (int)(c.lng * xScale);
             int y = (int)(c.lat * yScale);
 
-            try {
-                counter[x - 1][y]++;
-            } catch(Exception e) { }
+            //try {
+            //    counter[x - 1][y]++;
+            //} catch(Exception e) { }
 
-            try {
-                counter[x + 1][y]++;
-            } catch(Exception e) { }
+            //try {
+            //    counter[x + 1][y]++;
+            //} catch(Exception e) { }
 
-            try {
-                counter[x][y - 1]++;
-            } catch(Exception e) { }
+            //try {
+            //    counter[x][y - 1]++;
+            //} catch(Exception e) { }
 
-            try {
-                counter[x][y + 1]++;
-            } catch(Exception e) { }
+            //try {
+            //    counter[x][y + 1]++;
+            //} catch(Exception e) { }
 
             counter[x][y] += 2;
 
@@ -122,6 +125,9 @@ public class HeatMap : MonoBehaviour {
         }
         //Texture2D texture = new Texture2D(xScale + 1, yScale + 1);
         List<ParticleSystem> list = new List<ParticleSystem>();
+        GameObject o = new GameObject();
+        o.transform.parent = container.transform;
+        o.SetActive(false);
         for(int j = 0; j <= yScale; j++) {
             for(int i = 0; i <= xScale; i++) {
                 if(counter[i][j] <= max && counter[i][j] > 0) {
@@ -129,6 +135,7 @@ public class HeatMap : MonoBehaviour {
                     GameObject g = Instantiate(particles);
                     ParticleSystem p = g.GetComponent<ParticleSystem>();
                     g.transform.position = new Vector3(i, step * 2, j);
+                    g.transform.parent = o.transform;
                     p.emissionRate = 100 * step;
                     if(step > 0.3f) {
                         p.startColor = new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f);
@@ -137,7 +144,6 @@ public class HeatMap : MonoBehaviour {
                         p.startColor = new Color((step * 3), 1.0f, 0.0f);
                         //texture.SetPixel(i, j, new Color((step * 3), 1.0f, 0.0f));
                     }
-                    g.SetActive(false);
                     list.Add(p);
                 } else {
                     //texture.SetPixel(i, j, new Color(0.0f, 0.0f, 1.0f));
@@ -158,17 +164,16 @@ public class HeatMap : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         if(!done) {
-            int i = 0;
             foreach(var texture in m_particles) {
-                foreach(ParticleSystem g in texture.Value) {
-                    g.gameObject.SetActive(true);
-                    i++;
-                }
-                Debug.Log("Go " + i);
+                GameObject g = texture.Value[0].transform.parent.gameObject;
+                g.SetActive(true);
+                g.transform.position = new Vector3(7, 0, -16);
+                g.transform.rotation = Quaternion.Euler(0, 180, 0);
+                g.transform.localScale = new Vector3(0.8f, 1, -0.8f);
                 /*MeshRenderer quadRend = quad.GetComponent<MeshRenderer>();
                 quadRend.sharedMaterial.mainTexture = texture.Value;*/
                 done = true;
-                break;
+                //break;
             }
         }
 	}
