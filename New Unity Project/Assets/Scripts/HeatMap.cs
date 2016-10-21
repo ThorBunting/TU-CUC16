@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using UnityEditor;
-using System;
 
 public class HeatMap : MonoBehaviour {
 
@@ -15,6 +12,8 @@ public class HeatMap : MonoBehaviour {
     string url = "http://52.50.211.86:1880/clients";
     Dictionary<string, Texture2D> m_textures = new Dictionary<string, Texture2D>();
     Dictionary<string, List<ParticleSystem>> m_particles = new Dictionary<string, List<ParticleSystem>>();
+    List<string> m_stamps = new List<string>();
+    int active = -1;
 
     [SerializeField]
     GameObject container;
@@ -39,6 +38,7 @@ public class HeatMap : MonoBehaviour {
             if(c.seenString != null) {
                 string stamp = c.seenString.Substring(0, 15);
                 if(!byTime.ContainsKey(stamp)) {
+                    m_stamps.Add(stamp);
                     byTime.Add(stamp, new List<Client>());
                 }
                 byTime[stamp].Add(c);
@@ -154,6 +154,30 @@ public class HeatMap : MonoBehaviour {
         //m_textures.Add(stamp, texture);
     }
 
+    void Activate (int index) {
+        if(active != -1) {
+            m_particles[m_stamps[active]][0].transform.parent.gameObject.SetActive(false);
+        }
+        active = index;
+        GameObject g = m_particles[m_stamps[active]][0].transform.parent.gameObject;
+        g.SetActive(true);
+        g.transform.position = new Vector3(7, 0, -16);
+        g.transform.rotation = Quaternion.Euler(0, 180, 0);
+        g.transform.localScale = new Vector3(0.8f, 1, -0.8f);
+
+    }
+
+    void DoInput() {
+        int ind = active;
+        if(Input.anyKey) {
+            ind++;
+            if(ind >= m_stamps.Count) {
+                ind = 0;
+            }
+            Activate(ind);
+        }
+    }
+
     // Use this for initialization
     void Start () {
         StartCoroutine(getData());
@@ -163,18 +187,11 @@ public class HeatMap : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        if(!done) {
-            foreach(var texture in m_particles) {
-                GameObject g = texture.Value[0].transform.parent.gameObject;
-                g.SetActive(true);
-                g.transform.position = new Vector3(7, 0, -16);
-                g.transform.rotation = Quaternion.Euler(0, 180, 0);
-                g.transform.localScale = new Vector3(0.8f, 1, -0.8f);
-                /*MeshRenderer quadRend = quad.GetComponent<MeshRenderer>();
-                quadRend.sharedMaterial.mainTexture = texture.Value;*/
-                done = true;
-                //break;
-            }
+        if(active == -1 && m_stamps.Count != 0) {
+            Activate(0);
+        }
+        if(active != -1) {
+            DoInput();
         }
 	}
 }
