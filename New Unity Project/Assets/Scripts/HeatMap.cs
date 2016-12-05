@@ -3,19 +3,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+[System.Serializable]
+public struct Client
+{
+    public string _id;
+    public string name;
+    public string mac;
+    public float latitude;
+    public float longitude;
+    public bool seen;
+    public string seenEpoch;
+    public string manufacturer;
+    public string os;
+    public string ssid;
+}
+
+[System.Serializable]
+public struct Clients
+{
+    public List<Client> _;
+
+}
+
 public class HeatMap : MonoBehaviour
 {
-
+    // Range for normalisation
     [SerializeField, Range(1, 256)]
     private int xScale = 64;
     [SerializeField, Range(1, 256)]
     private int yScale = 64;
 
-    string url = "http://52.50.211.86:1880/clients";
-    Dictionary<string, Texture2D> m_textures = new Dictionary<string, Texture2D>();
-    Dictionary<string, List<ParticleSystem>> m_particles = new Dictionary<string, List<ParticleSystem>>();
-    List<string> m_stamps = new List<string>();
+    // Dictionary to store dataset with timestamp
+    public Dictionary<string, Clients> dataSet = new Dictionary<string, Clients>();
+
+    // URL where the JSON data is hosted
+    string url = "https://api.myjson.com/bins/44g0z";
+
+    // Dictionary for storing particle systems and timestamp
+    Dictionary<string, List<GameObject>> m_particles = new Dictionary<string, List<GameObject>>();
+
+    //Int to indicate the active dataset
     int active = -1;
+
+    // Try and remove this
+    List<string> m_stamps = new List<string>();
 
     [SerializeField]
     GameObject container;
@@ -26,26 +57,36 @@ public class HeatMap : MonoBehaviour
     [SerializeField]
     GameObject gui;
 
+    [SerializeField]
+    GameObject textMesh;
+
+    private int systemNumber = 0;
+
     private IEnumerator getData()
     {
         WWW www = new WWW(url);
+        Debug.Log(www.url);
         yield return www;
         string json = www.text;
-        json = json.Insert(0, @"{""_"":");
-        json += "}";
+
+        Debug.Log(json);
         Clients clients = JsonUtility.FromJson<Clients>(json);
+
+        Debug.Log(clients._.Count + "Num of clients");
 
         SortData(clients._);
     }
 
     private void SortData(List<Client> clients)
     {
+        Debug.Log(clients.Count + "Clients being sorted");
         Dictionary<string, List<Client>> byTime = new Dictionary<string, List<Client>>();
         foreach (Client c in clients)
         {
-            if (c.seenString != null)
+            if (c.seen != false)
             {
-                string stamp = c.seenString.Substring(0, 15);
+                string stamp = c.seenEpoch;
+
                 if (!byTime.ContainsKey(stamp))
                 {
                     m_stamps.Add(stamp);
@@ -55,6 +96,8 @@ public class HeatMap : MonoBehaviour
             }
         }
 
+        Debug.Log(byTime.Count + "Number of vars in byTime");
+
         foreach (var t in byTime)
         {
             StartCoroutine(normalizeLocations(t.Key, t.Value));
@@ -63,6 +106,8 @@ public class HeatMap : MonoBehaviour
 
     private IEnumerator normalizeLocations(string stamp, List<Client> clients)
     {
+        Debug.Log(clients.Count + "Locations being normalized");
+
         float minX = float.MaxValue;
         float minY = float.MaxValue;
         float maxX = float.MinValue;
@@ -73,25 +118,25 @@ public class HeatMap : MonoBehaviour
 
         for (int ind = 0; ind < count; ind++)
         {
-            arr[ind].lng = (arr[ind].lng > 0.0f) ? arr[ind].lng : -arr[ind].lng;
-            arr[ind].lat = (arr[ind].lat > 0.0f) ? arr[ind].lat : -arr[ind].lat;
+            arr[ind].longitude= (arr[ind].longitude > 0.0f) ? arr[ind].longitude : -arr[ind].longitude;
+            arr[ind].latitude = (arr[ind].latitude > 0.0f) ? arr[ind].latitude : -arr[ind].latitude;
 
-            if (arr[ind].lng < minX)
+            if (arr[ind].longitude < minX)
             {
-                minX = arr[ind].lng;
+                minX = arr[ind].longitude;
             }
-            else if (arr[ind].lng > maxX)
+            else if (arr[ind].longitude > maxX)
             {
-                maxX = arr[ind].lng;
+                maxX = arr[ind].longitude;
             }
 
-            if (arr[ind].lat < minY)
+            if (arr[ind].latitude < minY)
             {
-                minY = arr[ind].lat;
+                minY = arr[ind].latitude;
             }
-            else if (arr[ind].lat > maxY)
+            else if (arr[ind].latitude > maxY)
             {
-                maxY = arr[ind].lat;
+                maxY = arr[ind].latitude;
             }
         }
 
@@ -100,58 +145,41 @@ public class HeatMap : MonoBehaviour
 
         for (int ind = 0; ind < count; ind++)
         {
-            arr[ind].lng -= minX;
-            arr[ind].lng /= difX;
+            arr[ind].longitude -= minX;
+            arr[ind].longitude /= difX;
 
-            arr[ind].lat -= minY;
-            arr[ind].lat /= difY;
+            arr[ind].latitude -= minY;
+            arr[ind].latitude /= difY;
         }
 
-        ProduceTexture(stamp, arr);
+        ProduceDataPoints(stamp, arr);
+        systemNumber = 0;
 
         yield break;
     }
 
-    private void ProduceTexture(string stamp, Client[] clients)
+    private void ProduceDataPoints(string stamp, Client[] clients)
     {
+        Debug.Log(clients.Length + "Particle Systems being produced");
         int max = 0;
         int[][] counter = new int[xScale + 1][];
         for (int i = 0; i <= xScale; i++) { counter[i] = new int[yScale + 1]; }
 
         foreach (Client c in clients)
         {
-            int x = (int)(c.lng * xScale);
-            int y = (int)(c.lat * yScale);
+            int x = (int)(c.longitude * xScale);
+            int y = (int)(c.latitude * yScale);
 
-            //try {
-            //    counter[x - 1][y]++;
-            //} catch(Exception e) { }
+            counter[x][y] += 2;
 
-            //try {
-            //    counter[x + 1][y]++;
-            //} catch(Exception e) { }
-
-            //try {
-            //    counter[x][y - 1]++;
-            //} catch(Exception e) { }
-
-            //try {
-            //    counter[x][y + 1]++;
-            //} catch(Exception e) { }
-
-            try
+            if (counter[x][y] > max)
             {
-                counter[x][y] += 2;
-
-                if (counter[x][y] > max)
-                {
-                    max = counter[x][y];
-                }
+                max = counter[x][y];
             }
-            catch (System.Exception e) { }
         }
-        //Texture2D texture = new Texture2D(xScale + 1, yScale + 1);
-        List<ParticleSystem> list = new List<ParticleSystem>();
+
+        List<GameObject> list = new List<GameObject>();
+        List<TextMesh> tmList = new List<TextMesh>();
         GameObject o = new GameObject();
         o.transform.parent = container.transform;
         o.SetActive(false);
@@ -162,35 +190,39 @@ public class HeatMap : MonoBehaviour
                 if (counter[i][j] <= max && counter[i][j] > 0)
                 {
                     float step = (float)counter[i][j] / max;
+                    Debug.Log("Step is: " + step);
                     GameObject g = Instantiate(particles);
+                    GameObject t = Instantiate(textMesh);
                     ParticleSystem p = g.GetComponent<ParticleSystem>();
-                    g.transform.position = new Vector3(i, step * 2, j);
+                    TextMesh tm = t.GetComponent<TextMesh>();
+                    g.transform.position = new Vector3(i, step, j);
+                    t.transform.position = new Vector3(i, step, j);
                     g.transform.parent = o.transform;
+                    t.transform.parent = o.transform;
+                    tm.text = "Device: " + clients[systemNumber].manufacturer + " - " + clients[systemNumber].name + "\nMac Address: " + clients[systemNumber].mac;
+                    systemNumber += 1;
                     p.emissionRate = 15 * step;
                     if (step > 0.3f)
                     {
                         p.startColor = new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f);
-                        //texture.SetPixel(i, j, new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f));
                     }
                     else
                     {
                         p.startColor = new Color((step * 3), 1.0f, 0.0f);
-                        //texture.SetPixel(i, j, new Color((step * 3), 1.0f, 0.0f));
                     }
-                    list.Add(p);
+                    list.Add(g);
                 }
                 else
                 {
-                    //texture.SetPixel(i, j, new Color(0.0f, 0.0f, 1.0f));
                 }
             }
         }
         m_particles.Add(stamp, list);
-        //m_textures.Add(stamp, texture);
     }
 
     void Activate(int index)
     {
+        Debug.Log("Activating");
         if (active != -1)
         {
             m_particles[m_stamps[active]][0].transform.parent.gameObject.SetActive(false);
@@ -242,8 +274,6 @@ public class HeatMap : MonoBehaviour
     {
         StartCoroutine(getData());
     }
-
-    bool done = false;
 
     // Update is called once per frame
     void Update()
