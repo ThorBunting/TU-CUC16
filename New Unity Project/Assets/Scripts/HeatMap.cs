@@ -22,7 +22,16 @@ public struct Client
 public struct Clients
 {
     public List<Client> _;
-
+    public List<Client> frame1;
+    public List<Client> frame2;
+    public List<Client> frame3;
+    public List<Client> frame4;
+    public List<Client> frame5;
+    public List<Client> frame6;
+    public List<Client> frame7;
+    public List<Client> frame8;
+    public List<Client> frame9;
+    public List<Client> frame10;
 }
 
 public class HeatMap : MonoBehaviour
@@ -37,7 +46,7 @@ public class HeatMap : MonoBehaviour
     public Dictionary<string, Clients> dataSet = new Dictionary<string, Clients>();
 
     // URL where the JSON data is hosted
-    string url = "https://api.myjson.com/bins/44g0z";
+    string url = "https://api.myjson.com/bins/2jgkh";
 
     // Dictionary for storing particle systems and timestamp
     Dictionary<string, List<GameObject>> m_particles = new Dictionary<string, List<GameObject>>();
