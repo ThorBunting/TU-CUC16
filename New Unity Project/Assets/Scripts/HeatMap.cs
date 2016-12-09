@@ -22,16 +22,6 @@ public struct Client
 public struct Clients
 {
     public List<Client> _;
-    public List<Client> frame1;
-    public List<Client> frame2;
-    public List<Client> frame3;
-    public List<Client> frame4;
-    public List<Client> frame5;
-    public List<Client> frame6;
-    public List<Client> frame7;
-    public List<Client> frame8;
-    public List<Client> frame9;
-    public List<Client> frame10;
 }
 
 public class HeatMap : MonoBehaviour
@@ -208,16 +198,16 @@ public class HeatMap : MonoBehaviour
                     t.transform.position = new Vector3(i, step, j);
                     g.transform.parent = o.transform;
                     t.transform.parent = o.transform;
-                    tm.text = "Device: " + clients[systemNumber].manufacturer + " - " + clients[systemNumber].name + "\nMac Address: " + clients[systemNumber].mac;
+                    tm.text = "Device: " + clients[systemNumber].manufacturer + " - " + clients[systemNumber].name + "\nMac Address: " + clients[systemNumber].mac + "\nLatitude: " + clients[systemNumber].latitude + "\nLongitude: " + clients[systemNumber].longitude;
                     systemNumber += 1;
                     p.emissionRate = 15 * step;
                     if (step > 0.3f)
                     {
-                        p.startColor = new Color(1.0f, 1.0f - ((step - 0.7f) * 3), 0.0f);
+                        p.startColor = Color.red;
                     }
                     else
                     {
-                        p.startColor = new Color((step * 3), 1.0f, 0.0f);
+                        p.startColor = Color.red;
                     }
                     list.Add(g);
                 }
